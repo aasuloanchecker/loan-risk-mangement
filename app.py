@@ -5,12 +5,9 @@ from sklearn.tree import DecisionTreeClassifier
 # قراءة البيانات
 data = pd.read_csv('train_u6lujuX_CVtuZ9i.csv')
 
-# نختار الأعمدة المهمة للتصنيف
-X = data[['ApplicantIncome', 'LoanAmount']].fillna(0)  # نعالج القيم الفارغة بـ 0
-y = data['Loan_Status']
-
-# تحويل التصنيفات إلى أرقام (لأن DecisionTree يتعامل مع أرقام)
-y = y.map({'Y': 1, 'N': 0})
+# تجهيز البيانات: نستخدم الراتب، مبلغ القرض، مدة القرض
+X = data[['ApplicantIncome', 'LoanAmount', 'Loan_Amount_Term']].fillna(0)
+y = data['Loan_Status'].map({'Y': 1, 'N': 0})
 
 # تدريب نموذج Decision Tree
 model = DecisionTreeClassifier()
@@ -19,18 +16,22 @@ model.fit(X, y)
 # تصميم واجهة Streamlit
 st.title('Loan Risk Prediction App')
 
-st.write('أدخل المعلومات التالية لمعرفة إذا القرض خطير أو آمن')
+st.write('أدخل المعلومات التالية لمعرفة مدى خطورة القرض')
 
 # مدخلات المستخدم
-income = st.number_input('دخل مقدم الطلب (Applicant Income)', min_value=0)
+age = st.number_input('العمر', min_value=18, max_value=100)
+income = st.number_input('الراتب الشهري (Applicant Income)', min_value=0)
 loan_amount = st.number_input('مبلغ القرض المطلوب (Loan Amount)', min_value=0)
+loan_term_years = st.number_input('مدة القرض (بالسنوات)', min_value=1, max_value=30)
+loan_purpose = st.selectbox('سبب القرض', ['شراء منزل', 'شراء سيارة', 'دراسة', 'توسعة عمل', 'أخرى'])
 
-# زر توقع
+# نحول مدة القرض من سنة إلى شهر عشان تناسب الداتا الأصلية
+loan_term_months = loan_term_years * 12
+
+# زر التوقع
 if st.button('توقع نتيجة القرض'):
-    # نعمل التوقع
-    prediction = model.predict([[income, loan_amount]])
+    prediction = model.predict([[income, loan_amount, loan_term_months]])
     
-    # نعرض النتيجة
     if prediction[0] == 1:
         st.success('القرض: منخفض الخطورة (تمت الموافقة عليه)')
     else:
