@@ -2,37 +2,37 @@ import streamlit as st
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 
-# قراءة البيانات
+# Read the dataset
 data = pd.read_csv('train_u6lujuX_CVtuZ9i.csv')
 
-# تجهيز البيانات: نستخدم الراتب، مبلغ القرض، مدة القرض
+# Prepare the data: use Applicant Income, Loan Amount, Loan Term
 X = data[['ApplicantIncome', 'LoanAmount', 'Loan_Amount_Term']].fillna(0)
 y = data['Loan_Status'].map({'Y': 1, 'N': 0})
 
-# تدريب نموذج Decision Tree
+# Train the Decision Tree model
 model = DecisionTreeClassifier()
 model.fit(X, y)
 
-# تصميم واجهة Streamlit
+# Streamlit App
 st.title('Loan Risk Prediction App')
 
-st.write('أدخل المعلومات التالية لمعرفة مدى خطورة القرض')
+st.write('Enter the following information to predict loan risk')
 
-# مدخلات المستخدم
-age = st.number_input('العمر', min_value=18, max_value=100)
-income = st.number_input('الراتب الشهري (Applicant Income)', min_value=0)
-loan_amount = st.number_input('مبلغ القرض المطلوب (Loan Amount)', min_value=0)
-loan_term_years = st.number_input('مدة القرض (بالسنوات)', min_value=1, max_value=30)
-loan_purpose = st.selectbox('سبب القرض', ['شراء منزل', 'شراء سيارة', 'دراسة', 'توسعة عمل', 'أخرى'])
+# User Inputs
+age = st.number_input('Age', min_value=18, max_value=100)
+income = st.number_input('Monthly Income (Applicant Income)', min_value=0)
+loan_amount = st.number_input('Loan Amount', min_value=0)
+loan_term_years = st.number_input('Loan Term (in years)', min_value=1, max_value=30)
+loan_purpose = st.selectbox('Loan Purpose', ['Buy a House', 'Buy a Car', 'Education', 'Business Expansion', 'Other'])
 
-# نحول مدة القرض من سنة إلى شهر عشان تناسب الداتا الأصلية
+# Convert loan term from years to months
 loan_term_months = loan_term_years * 12
 
-# زر التوقع
-if st.button('توقع نتيجة القرض'):
+# Predict
+if st.button('Predict Loan Result'):
     prediction = model.predict([[income, loan_amount, loan_term_months]])
     
     if prediction[0] == 1:
-        st.success('القرض: منخفض الخطورة (تمت الموافقة عليه)')
+        st.success('Loan Approved (Low Risk)')
     else:
-        st.error('القرض: عالي الخطورة (تم رفضه)')
+        st.error('Loan Rejected (High Risk)')
